@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import axiosInstance from '../utils/axiosInstance';
+import axiosInstance from '../utils/axiosInstance.ts';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
 import { Badge } from '../components/ui/Badge';
 import { useState } from 'react';
-import { useAuthStore } from '../stores/authStore';
+import { useAuthStore } from '../stores/AuthStore.ts';
 import { formatAmountCents } from '../utils/formatCurrency'; // Import formatter
 
 interface PaymentItem {

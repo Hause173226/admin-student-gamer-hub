@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import axiosInstance from '../utils/axiosInstance';
+import axiosInstance from '../utils/axiosInstance.ts';
 import StatCard from '../components/ui/StatCard';
 import { Users, Building2, Calendar, DollarSign, AlertCircle, Gamepad2, ShoppingCart, Award } from 'lucide-react';
 import Badge from '../components/ui/Badge';
-import { useAuthStore } from '../stores/authStore';
+import { useAuthStore } from '../stores/AuthStore.ts';
 import { useState } from 'react';
 import {
     BarChart,

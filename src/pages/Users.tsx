@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import axiosInstance from '../utils/axiosInstance';
+import axiosInstance from '../utils/axiosInstance.ts';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
 import { Badge } from '../components/ui/Badge';
-import { useAuthStore } from '../stores/AuthStore';
 import { useState } from 'react';
 import UserDetailModal from './UserDetailModal'; // 🔥 NEW MODAL
 
@@ -40,7 +39,6 @@ interface ApiResponse {
 }
 
 export function Users() {
-  const { user } = useAuthStore();
   const [page, setPage] = useState(1);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null); // 🔥 MODAL STATE
 
