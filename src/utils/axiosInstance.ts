@@ -8,6 +8,7 @@ interface RefreshTokenResponse {
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL, // ✅ use env variable
   headers: { "Content-Type": "application/json" },
+  withCredentials: true,
 });
 
 axiosInstance.interceptors.request.use(
