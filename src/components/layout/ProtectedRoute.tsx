@@ -1,26 +1,26 @@
-import { useEffect } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../stores/authStore'; // Your auth store
+import { useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../stores/AuthStore"; // Your auth store
 
 interface ProtectedRouteProps {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-    const { isLoggedIn } = useAuthStore();
-    const navigate = useNavigate();
+  const { isLoggedIn } = useAuthStore();
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        if (!isLoggedIn) {
-            navigate('/login', { replace: true }); // Silent redirect
-        }
-    }, [isLoggedIn, navigate]);
-
+  useEffect(() => {
     if (!isLoggedIn) {
-        return <Navigate to="/login" replace />; // Fallback for SSR/strict mode
+      navigate("/login", { replace: true }); // Silent redirect
     }
+  }, [isLoggedIn, navigate]);
 
-    return <>{children}</>; // Render kids if auth'd
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />; // Fallback for SSR/strict mode
+  }
+
+  return <>{children}</>; // Render kids if auth'd
 }
 
 // 🔥 FIX: Default export – Matches App.tsx import
