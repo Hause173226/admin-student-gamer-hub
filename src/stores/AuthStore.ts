@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { jwtDecode } from 'jwt-decode';
-import axiosInstance, { callRefreshToken, scheduleTokenRefresh, clearTokenRefresh } from '../utils/axiosInstance';
+import axiosInstance, { callRefreshToken, scheduleTokenRefresh, clearTokenRefresh } from '../utils/axiosInstance.ts';
 import type { User } from '../types/index.ts';
 
 interface JwtPayload {

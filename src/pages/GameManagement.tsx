@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "../components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/Table";
 import { Loader2 } from "lucide-react";
-import axiosInstance from '../utils/axiosInstance';
+import axiosInstance from '../utils/axiosInstance.ts';
 
 interface Game {
     GameId: string;
