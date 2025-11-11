@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { DivideIcon as LucideIcon } from 'lucide-react';
+import {LucideIcon} from "lucide-react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
@@ -23,7 +23,7 @@ const sizeClasses = {
   lg: 'px-6 py-3 text-base'
 };
 
-export function Button({ 
+export  function Button({
   variant = 'primary', 
   size = 'md', 
   icon: Icon, 

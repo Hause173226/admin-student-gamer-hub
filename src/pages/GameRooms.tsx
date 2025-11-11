@@ -7,7 +7,7 @@ import { Menu } from '@headlessui/react';
 import { MOCK_ROOMS } from '../constants/mockData';
 import { clsx } from 'clsx';
 
-export function GameRooms() {
+export default function GameRooms() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [rooms] = useState(MOCK_ROOMS);

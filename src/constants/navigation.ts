@@ -28,6 +28,24 @@ export const NAVIGATION_ITEMS = [
         href: '/admin/analytics',
         icon: BarChart3,
         badge: null
+      },
+      {
+        name: 'Transactions',
+        href: '/admin/transactions',
+        icon: CreditCard,
+        badge: 7
+      },
+        {
+            name: 'Membership ',
+            href: '/admin/membership-management',
+            icon: Users,
+            badge: null
+        }
+        ,{
+            name: 'Payments ',
+            href: '/admin/payments-management',
+            icon: CreditCard,
+            badge: null
       }
     ]
   },
@@ -57,7 +75,25 @@ export const NAVIGATION_ITEMS = [
         href: '/admin/tournaments',
         icon: Trophy,
         badge: null
-      }
+      },
+      {
+        name: 'Community',
+        href: '/admin/community-management',
+        icon: Users,
+        badge: null
+      },
+        {
+            name: 'Club',
+            href: '/admin/club-management',
+            icon: Users,
+            badge: null
+        },
+        {
+            name: 'Game',
+            href: '/admin/game-management',
+            icon: Gamepad2,
+            badge: null
+        }
     ]
   },
   {
