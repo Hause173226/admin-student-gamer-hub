@@ -6,7 +6,7 @@ interface RefreshTokenResponse {
 }
 
 const axiosInstance = axios.create({
-    baseURL: 'https://student-gamer-hub.onrender.com/api',
+    baseURL: import.meta.env.VITE_API_BASE_URL, // ✅ use env variable
     headers: { 'Content-Type': 'application/json' },
     withCredentials: true,
 });
