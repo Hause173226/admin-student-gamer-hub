@@ -6,7 +6,7 @@ import { Badge } from '../components/ui/Badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
 import { MOCK_BILLING_PLANS, MOCK_USERS } from '../constants/mockData';
 
-export function Billing() {
+export default function Billing() {
   const [plans] = useState(MOCK_BILLING_PLANS);
   const [subscriptions] = useState(
     MOCK_USERS.slice(0, 5).map(user => ({

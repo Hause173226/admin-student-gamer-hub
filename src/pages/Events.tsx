@@ -7,7 +7,7 @@ import { Menu } from '@headlessui/react';
 import { MOCK_EVENTS } from '../constants/mockData';
 import { clsx } from 'clsx';
 
-export function Events() {
+export default function Events() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [events] = useState(MOCK_EVENTS);

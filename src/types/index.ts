@@ -10,14 +10,16 @@ export interface User {
   lastActive: string;
   gamesPlayed: number;
   hoursPlayed: number;
+  tokenExp?: number; // Optional: JWT expiry timestamp (seconds) for session UI
 }
 
 export interface GameRoom {
   id: string;
   name: string;
   game: string;
-  creator: User;
-  participants: User[];
+  creator: User; // Full User for creator (key entity)
+  participantIds: string[]; // Array of User IDs (lightweight for lists)
+  participants?: User[]; // Optional full users (fetch via /rooms/{id}/participants)
   maxParticipants: number;
   status: 'active' | 'waiting' | 'full' | 'ended';
   createdAt: string;
@@ -39,6 +41,7 @@ export interface Event {
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
   prize?: string;
   registrationDeadline: string;
+  location?: string; // Optional: e.g., "Online" or "SGH Campus Room 101"
 }
 
 export interface Feedback {
@@ -53,6 +56,7 @@ export interface Feedback {
   respondedAt?: string;
   response?: string;
   category: string;
+  attachment?: string; // Optional: URL to screenshot/file
 }
 
 export interface BillingPlan {

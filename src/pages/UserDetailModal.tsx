@@ -3,7 +3,7 @@ import axiosInstance from '../utils/axiosInstance';
 import StatCard from '../components/ui/StatCard';
 import { Users, Building2, Calendar, DollarSign, AlertCircle, Gamepad2, ShoppingCart, Award } from 'lucide-react';
 import Badge from '../components/ui/Badge';
-import { useAuthStore } from '../stores/AuthStore.ts';
+import { useAuthStore } from '../stores/authStore';
 import { useState } from 'react';
 import {
     BarChart,
@@ -59,30 +59,30 @@ export function Dashboard() {
     const { user } = useAuthStore();
     const [period, setPeriod] = useState<'week' | 'month' | 'year'>('week');
 
-    // Summary query
     const { data: summaryData } = useQuery<DashboardSummary>({
         queryKey: ['dashboardSummary'],
         queryFn: () => axiosInstance.get('/admin/dashboard/summary').then(res => res.data),
         staleTime: 5 * 60 * 1000,
     });
 
-    // ✅ FIXED: only one endpoint, pass query param
-    const { data: revenueData, isLoading: revenueLoading } = useQuery<RevenueResponse>({
+    const { data: revenueData } = useQuery<RevenueResponse>({
         queryKey: ['revenue', period],
-        queryFn: () =>
-            axiosInstance
-                .get(`/admin/dashboard/revenue`, { params: { period } }) // ✅ /revenue?period=week
-                .then(res => res.data),
+        queryFn: () => axiosInstance.get(`/admin/dashboard/revenue/${period}`).then(res => res.data),
         staleTime: 5 * 60 * 1000,
     });
 
     const stats = summaryData || {};
 
-    const chartData: ChartData[] = (revenueData?.DailyBreakdown || []).map(day => ({
-        date: new Date(day.Date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    const chartData: ChartData[] = (revenueData?.DailyBreakdown || []).map((day) => ({
+        date: new Date(day.Date + 'Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), // 🔥 FIX: Append 'Z' for UTC parsing
         revenue: day.RevenueCents / 100,
         transactions: day.TransactionCount,
     }));
+
+    // 🔥 FIX: Debug logs – Verify data
+    console.log('Revenue response:', revenueData); // Full API
+    console.log('DailyBreakdown:', revenueData?.DailyBreakdown); // Array of 3
+    console.log('Chart data:', chartData); // Mapped 3 entries
 
     const totalRevenueVND = (revenueData?.TotalRevenueCents || 0) / 100;
 
@@ -92,16 +92,11 @@ export function Dashboard() {
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Overview</h1>
                     <p className="text-gray-600 dark:text-gray-400">
-                        Welcome, {user?.name}! Stats as of{' '}
-                        <Badge variant="info">
-                            {stats.GeneratedAtUtc ? new Date(stats.GeneratedAtUtc).toLocaleString() : '—'}
-                        </Badge>
-                        .
+                        Welcome, {user?.name}! Stats as of <Badge variant="info">{new Date(stats.GeneratedAtUtc).toLocaleString()}</Badge>.
                     </p>
                 </div>
             </div>
 
-            {/* Summary cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <StatCard title="Total Users" value={stats.TotalUsers} icon={Users} color="blue" />
                 <StatCard title="New Users Last 30 Days" value={stats.NewUsersLast30Days} icon={Users} color="green" />
@@ -116,7 +111,6 @@ export function Dashboard() {
                 <StatCard title="Open Bug Reports" value={stats.OpenBugReports} icon={AlertCircle} color="red" />
             </div>
 
-            {/* Period Selector */}
             <div className="flex justify-center mb-4">
                 <select
                     value={period}
@@ -129,37 +123,28 @@ export function Dashboard() {
                 </select>
             </div>
 
-            {/* Revenue Chart */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-                <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">
-                    Revenue Breakdown ({period.toUpperCase()})
-                </h3>
-                {revenueLoading ? (
-                    <p className="text-center text-gray-500 dark:text-gray-400">Loading revenue data...</p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm" style={{ minHeight: '400px' }}> {/* 🔥 FIX: Min-height for chart render */}
+                <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Revenue Breakdown ({period.charAt(0).toUpperCase() + period.slice(1)})</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Total: {totalRevenueVND.toLocaleString('vi-VN')} VND | Period: {new Date(revenueData?.PeriodStart + 'Z').toLocaleDateString()} to {new Date(revenueData?.PeriodEnd + 'Z').toLocaleDateString()} {/* 🔥 FIX: Append 'Z' for UTC */}
+                </p>
+                {chartData.length === 0 ? (
+                    <p className="text-center text-gray-500">No breakdown data available</p> // 🔥 FIX: Empty fallback
                 ) : (
-                    <>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            Total: {totalRevenueVND.toLocaleString('vi-VN')} VND | Period:{' '}
-                            {new Date(revenueData?.PeriodStart || '').toLocaleDateString()} to{' '}
-                            {new Date(revenueData?.PeriodEnd || '').toLocaleDateString()}
-                        </p>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={chartData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                                <XAxis dataKey="date" stroke="#6b7280" />
-                                <YAxis stroke="#6b7280" tickFormatter={(v) => `${v.toLocaleString('vi-VN')} VND`} />
-                                <Tooltip
-                                    formatter={(value: number, name: string) => [
-                                        name === 'revenue' ? `${value.toLocaleString('vi-VN')} VND` : value,
-                                        name,
-                                    ]}
-                                />
-                                <Legend />
-                                <Bar dataKey="revenue" fill="#3b82f6" name="Revenue (VND)" />
-                                <Bar dataKey="transactions" fill="#10b981" name="Transactions" />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                            <XAxis dataKey="date" stroke="#6b7280" />
+                            <YAxis stroke="#6b7280" tickFormatter={(value) => `${value.toLocaleString('vi-VN')} VND`} />
+                            <Tooltip formatter={(value: number, name: string) => [
+                                name === 'revenue' ? `${value.toLocaleString('vi-VN')} VND` : value,
+                                name
+                            ]} />
+                            <Legend />
+                            <Bar dataKey="revenue" fill="#3b82f6" name="Revenue (VND)" />
+                            <Bar dataKey="transactions" fill="#10b981" name="Transactions" />
+                        </BarChart>
+                    </ResponsiveContainer>
                 )}
             </div>
         </div>
