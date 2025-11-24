@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/AuthStore"; // Your auth store
 
 interface ProtectedRouteProps {
@@ -7,14 +7,31 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isLoggedIn } = useAuthStore();
-  const navigate = useNavigate();
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const [hasHydrated, setHasHydrated] = useState(
+    useAuthStore.persist?.hasHydrated?.() ?? true
+  );
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      navigate("/login", { replace: true }); // Silent redirect
+    if (useAuthStore.persist?.hasHydrated?.()) {
+      setHasHydrated(true);
+      return;
     }
-  }, [isLoggedIn, navigate]);
+    const unsub = useAuthStore.persist?.onFinishHydration?.(() =>
+      setHasHydrated(true)
+    );
+    return () => {
+      unsub?.();
+    };
+  }, []);
+
+  if (!hasHydrated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />; // Fallback for SSR/strict mode

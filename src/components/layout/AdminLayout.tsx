@@ -1,20 +1,10 @@
 import { useState, useEffect } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
-import { useAuthStore } from "../../stores/AuthStore.ts";
 
 export function AdminLayout() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const { isLoggedIn } = useAuthStore(); // Auth check
-  const navigate = useNavigate();
-
-  // 🔥 FIX: Auth guard – Redirect if not logged in
-  useEffect(() => {
-    if (!isLoggedIn) {
-      navigate("/login", { replace: true }); // Silent redirect, no back button
-    }
-  }, [isLoggedIn, navigate]);
 
   // Theme init
   useEffect(() => {
