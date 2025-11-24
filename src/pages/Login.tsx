@@ -1,24 +1,45 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useLogin } from '../stores/AuthStore';
+import { useLogin, useAuthStore } from '../stores/AuthStore';
 
 export function Login() {
     const [formData, setFormData] = useState({ userNameOrEmail: '', password: '' });
     const { login, isLoading, error } = useLogin();
+    const { clearError } = useAuthStore();
     const navigate = useNavigate();
+
+    // Reset loading state when component mounts (in case it was stuck)
+    useEffect(() => {
+        const store = useAuthStore.getState();
+        if (store.isLoading) {
+            useAuthStore.setState({ isLoading: false, error: null });
+        }
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
+        // Clear error when user starts typing
+        if (error) {
+            clearError();
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const loginStartTime = Date.now();
         try {
+            console.log('🔐 Login attempt started...');
             await login(formData); // Awaits state update
-            navigate('/admin/', { replace: true }); // 🔥 FIX: Redirect to rooms route post-login
+            const loginDuration = Date.now() - loginStartTime;
+            console.log(`✅ Login successful in ${loginDuration}ms`);
+            
+            // Navigate immediately after login - don't wait for other components
+            navigate('/admin/', { replace: true });
         } catch (err) {
-            console.error('Login error:', err);
+            const loginDuration = Date.now() - loginStartTime;
+            console.error(`❌ Login failed after ${loginDuration}ms:`, err);
+            // Error is already handled in AuthStore, just ensure we don't navigate
         }
     };
 
@@ -34,7 +55,7 @@ export function Login() {
                             required
                             value={formData.userNameOrEmail}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border rounded-lg focus:ring-blue-500"
+                            className="w-full px-3 py-2 border rounded-lg focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             placeholder="Username or Email"
                         />
                     </div>
@@ -45,7 +66,7 @@ export function Login() {
                             required
                             value={formData.password}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border rounded-lg focus:ring-blue-500"
+                            className="w-full px-3 py-2 border rounded-lg focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             placeholder="Password"
                         />
                     </div>

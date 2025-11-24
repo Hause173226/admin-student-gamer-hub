@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { clsx } from "clsx";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronRight } from "lucide-react";
 import { NAVIGATION_ITEMS } from "../../constants/navigation";
 
 interface SidebarProps {
@@ -11,6 +11,17 @@ interface SidebarProps {
 
 export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   const location = useLocation();
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  const toggleExpand = (itemName: string) => {
+    const newExpanded = new Set(expandedItems);
+    if (newExpanded.has(itemName)) {
+      newExpanded.delete(itemName);
+    } else {
+      newExpanded.add(itemName);
+    }
+    setExpandedItems(newExpanded);
+  };
 
   return (
     <div
@@ -60,39 +71,103 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
             )}
             <ul className="space-y-1">
               {section.items.map((item) => {
-                const isActive = location.pathname === item.href;
+                const hasSubItems = item.subItems && item.subItems.length > 0;
+                const isExpanded = expandedItems.has(item.name);
+                const isSubItemActive = hasSubItems
+                  ? item.subItems?.some((subItem) => location.pathname === subItem.href)
+                  : false;
+                const isActive = !hasSubItems && location.pathname === item.href;
+
                 return (
                   <li key={item.name}>
-                    <Link
-                      to={item.href}
-                      className={clsx(
-                        "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors relative",
-                        isActive
-                          ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
-                          : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
-                        isCollapsed && "justify-center"
-                      )}
-                      title={isCollapsed ? item.name : undefined}
-                    >
-                      <item.icon
-                        className={clsx("w-5 h-5", !isCollapsed && "mr-3")}
-                      />
-                      {!isCollapsed && (
-                        <>
-                          <span className="flex-1">{item.name}</span>
-                          {item.badge && (
-                            <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                              {item.badge}
-                            </span>
+                    {hasSubItems ? (
+                      <>
+                        <button
+                          onClick={() => !isCollapsed && toggleExpand(item.name)}
+                          className={clsx(
+                            "flex items-center w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors relative",
+                            isSubItemActive
+                              ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+                              : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
+                            isCollapsed && "justify-center"
                           )}
-                        </>
-                      )}
-                      {isCollapsed && item.badge && (
-                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                          {item.badge}
-                        </span>
-                      )}
-                    </Link>
+                          title={isCollapsed ? item.name : undefined}
+                        >
+                          <item.icon
+                            className={clsx("w-5 h-5", !isCollapsed && "mr-3")}
+                          />
+                          {!isCollapsed && (
+                            <>
+                              <span className="flex-1 text-left">{item.name}</span>
+                              {isExpanded ? (
+                                <ChevronDown className="w-4 h-4" />
+                              ) : (
+                                <ChevronRight className="w-4 h-4" />
+                              )}
+                            </>
+                          )}
+                        </button>
+                        {!isCollapsed && isExpanded && (
+                          <ul className="ml-4 mt-1 space-y-1 border-l-2 border-gray-200 dark:border-gray-700 pl-4">
+                            {item.subItems?.map((subItem) => {
+                              const isSubActive = location.pathname === subItem.href;
+                              return (
+                                <li key={subItem.name}>
+                                  <Link
+                                    to={subItem.href}
+                                    className={clsx(
+                                      "flex items-center px-3 py-2 rounded-lg text-sm transition-colors",
+                                      isSubActive
+                                        ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 font-medium"
+                                        : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                                    )}
+                                  >
+                                    <subItem.icon className="w-4 h-4 mr-2" />
+                                    <span>{subItem.name}</span>
+                                    {subItem.badge && (
+                                      <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                        {subItem.badge}
+                                      </span>
+                                    )}
+                                  </Link>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        )}
+                      </>
+                    ) : (
+                      <Link
+                        to={item.href}
+                        className={clsx(
+                          "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors relative",
+                          isActive
+                            ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+                            : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
+                          isCollapsed && "justify-center"
+                        )}
+                        title={isCollapsed ? item.name : undefined}
+                      >
+                        <item.icon
+                          className={clsx("w-5 h-5", !isCollapsed && "mr-3")}
+                        />
+                        {!isCollapsed && (
+                          <>
+                            <span className="flex-1">{item.name}</span>
+                            {/* {item.badge && (
+                              <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                {item.badge}
+                              </span>
+                            )} */}
+                          </>
+                        )}
+                        {isCollapsed && item.badge && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                    )}
                   </li>
                 );
               })}

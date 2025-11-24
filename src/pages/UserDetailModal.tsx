@@ -1,154 +1,289 @@
-import { useQuery } from '@tanstack/react-query';
-import axiosInstance from '../utils/axiosInstance.ts';
-import StatCard from '../components/ui/StatCard';
-import { Users, Building2, Calendar, DollarSign, AlertCircle, Gamepad2, ShoppingCart, Award } from 'lucide-react';
-import Badge from '../components/ui/Badge';
-import { useAuthStore } from '../stores/AuthStore.ts';
-import { useState } from 'react';
-import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    Legend,
-    ResponsiveContainer,
-} from 'recharts';
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "../utils/axiosInstance.ts";
+import { X, User, Mail, Calendar, DollarSign, Award, Users, Building2 } from "lucide-react";
+import Badge from "../components/ui/Badge";
 
-interface DashboardSummary {
-    TotalUsers: number;
-    NewUsersLast30Days: number;
-    ActiveCommunities: number;
-    TotalClubs: number;
-    TotalGames: number;
-    TotalEvents: number;
-    TotalRevenueVND: number;
-    RevenueThisMonthVND: number;
-    SuccessfulTransactions: number;
-    ActiveMemberships: number;
-    OpenBugReports: number;
-    GeneratedAtUtc: string;
+interface UserDetail {
+  UserId: string;
+  UserName: string;
+  Email: string;
+  FullName: string;
+  AvatarUrl?: string;
+  Level: number;
+  Points: number;
+  WalletBalanceCents: number;
+  CurrentMembership?: string;
+  MembershipExpiresAt?: string;
+  EventsCreated: number;
+  EventsAttended: number;
+  CommunitiesJoined: number;
+  TotalSpentCents: number;
+  Roles: string[];
+  CreatedAtUtc: string;
+  UpdatedAtUtc?: string;
+  IsDeleted: boolean;
 }
 
-interface RevenueResponse {
-    PeriodType: string;
-    PeriodStart: string;
-    PeriodEnd: string;
-    TotalRevenueCents: number;
-    MembershipRevenueCents: number;
-    EventRevenueCents: number;
-    TopUpRevenueCents: number;
-    TransactionCount: number;
-    SuccessfulCount: number;
-    FailedCount: number;
-    DailyBreakdown: Array<{
-        Date: string;
-        RevenueCents: number;
-        TransactionCount: number;
-    }>;
+interface UserDetailModalProps {
+  userId: string;
+  onClose: () => void;
 }
 
-interface ChartData {
-    date: string;
-    revenue: number;
-    transactions: number;
-}
+export default function UserDetailModal({ userId, onClose }: UserDetailModalProps) {
+  const { data: userData, isLoading, error } = useQuery<UserDetail>({
+    queryKey: ["userDetail", userId],
+    queryFn: () =>
+      axiosInstance
+        .get(`/admin/dashboard/users/${userId}`)
+        .then((res) => res.data),
+  });
 
-export function Dashboard() {
-    const { user } = useAuthStore();
-    const [period, setPeriod] = useState<'week' | 'month' | 'year'>('week');
-
-    const { data: summaryData } = useQuery<DashboardSummary>({
-        queryKey: ['dashboardSummary'],
-        queryFn: () => axiosInstance.get('/admin/dashboard/summary').then(res => res.data),
-        staleTime: 5 * 60 * 1000,
-    });
-
-    const { data: revenueData } = useQuery<RevenueResponse>({
-        queryKey: ['revenue', period],
-        queryFn: () => axiosInstance.get(`/admin/dashboard/revenue/${period}`).then(res => res.data),
-        staleTime: 5 * 60 * 1000,
-    });
-
-    const stats = summaryData || {};
-
-    const chartData: ChartData[] = (revenueData?.DailyBreakdown || []).map((day) => ({
-        date: new Date(day.Date + 'Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), // 🔥 FIX: Append 'Z' for UTC parsing
-        revenue: day.RevenueCents / 100,
-        transactions: day.TransactionCount,
-    }));
-
-    // 🔥 FIX: Debug logs – Verify data
-    console.log('Revenue response:', revenueData); // Full API
-    console.log('DailyBreakdown:', revenueData?.DailyBreakdown); // Array of 3
-    console.log('Chart data:', chartData); // Mapped 3 entries
-
-    const totalRevenueVND = (revenueData?.TotalRevenueCents || 0) / 100;
-
+  if (isLoading) {
     return (
-        <div className="space-y-8">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Overview</h1>
-                    <p className="text-gray-600 dark:text-gray-400">
-                        Welcome, {user?.name}! Stats as of <Badge variant="info">{new Date(stats.GeneratedAtUtc).toLocaleString()}</Badge>.
-                    </p>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <StatCard title="Total Users" value={stats.TotalUsers} icon={Users} color="blue" />
-                <StatCard title="New Users Last 30 Days" value={stats.NewUsersLast30Days} icon={Users} color="green" />
-                <StatCard title="Active Communities" value={stats.ActiveCommunities} icon={Building2} color="purple" />
-                <StatCard title="Total Clubs" value={stats.TotalClubs} icon={Building2} color="blue" />
-                <StatCard title="Total Games" value={stats.TotalGames} icon={Gamepad2} color="green" />
-                <StatCard title="Total Events" value={stats.TotalEvents} icon={Calendar} color="purple" />
-                <StatCard title="Total Revenue (VND)" value={stats.TotalRevenueVND?.toLocaleString() || '0'} icon={DollarSign} color="orange" />
-                <StatCard title="Revenue This Month (VND)" value={stats.RevenueThisMonthVND?.toLocaleString() || '0'} icon={DollarSign} color="green" />
-                <StatCard title="Successful Transactions" value={stats.SuccessfulTransactions} icon={ShoppingCart} color="blue" />
-                <StatCard title="Active Memberships" value={stats.ActiveMemberships} icon={Award} color="green" />
-                <StatCard title="Open Bug Reports" value={stats.OpenBugReports} icon={AlertCircle} color="red" />
-            </div>
-
-            <div className="flex justify-center mb-4">
-                <select
-                    value={period}
-                    onChange={(e) => setPeriod(e.target.value as 'week' | 'month' | 'year')}
-                    className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500"
-                >
-                    <option value="week">Weekly</option>
-                    <option value="month">Monthly</option>
-                    <option value="year">Yearly</option>
-                </select>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm" style={{ minHeight: '400px' }}> {/* 🔥 FIX: Min-height for chart render */}
-                <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Revenue Breakdown ({period.charAt(0).toUpperCase() + period.slice(1)})</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Total: {totalRevenueVND.toLocaleString('vi-VN')} VND | Period: {new Date(revenueData?.PeriodStart + 'Z').toLocaleDateString()} to {new Date(revenueData?.PeriodEnd + 'Z').toLocaleDateString()} {/* 🔥 FIX: Append 'Z' for UTC */}
-                </p>
-                {chartData.length === 0 ? (
-                    <p className="text-center text-gray-500">No breakdown data available</p> // 🔥 FIX: Empty fallback
-                ) : (
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                            <XAxis dataKey="date" stroke="#6b7280" />
-                            <YAxis stroke="#6b7280" tickFormatter={(value) => `${value.toLocaleString('vi-VN')} VND`} />
-                            <Tooltip formatter={(value: number, name: string) => [
-                                name === 'revenue' ? `${value.toLocaleString('vi-VN')} VND` : value,
-                                name
-                            ]} />
-                            <Legend />
-                            <Bar dataKey="revenue" fill="#3b82f6" name="Revenue (VND)" />
-                            <Bar dataKey="transactions" fill="#10b981" name="Transactions" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                )}
-            </div>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">Đang tải thông tin...</p>
+          </div>
         </div>
+      </div>
     );
-}
+  }
 
-export default Dashboard;
+  if (error || !userData) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Lỗi</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <p className="text-red-600 dark:text-red-400">
+            Không thể tải thông tin người dùng. Vui lòng thử lại.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const walletBalanceVND = userData.WalletBalanceCents / 100;
+  const totalSpentVND = userData.TotalSpentCents / 100;
+  const status = userData.IsDeleted
+    ? "inactive"
+    : userData.Roles.includes("Admin")
+    ? "admin"
+    : "active";
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Chi Tiết Người Dùng
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* User Info Section */}
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Avatar & Basic Info */}
+            <div className="flex-shrink-0">
+              <img
+                src={
+                  userData.AvatarUrl ||
+                  "https://via.placeholder.com/150?text=U"
+                }
+                alt={userData.FullName}
+                className="w-32 h-32 rounded-full object-cover border-4 border-gray-200 dark:border-gray-700"
+              />
+            </div>
+
+            <div className="flex-1 space-y-4">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  {userData.FullName}
+                </h3>
+                <div className="flex flex-wrap gap-2 items-center">
+                  <Badge
+                    variant={
+                      status === "active"
+                        ? "success"
+                        : status === "admin"
+                        ? "info"
+                        : "error"
+                    }
+                  >
+                    {status}
+                  </Badge>
+                  {userData.Roles.map((role) => (
+                    <Badge key={role} variant="info">
+                      {role}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                  <User className="w-5 h-5 text-gray-500" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Username</p>
+                    <p className="font-medium">{userData.UserName}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                  <Mail className="w-5 h-5 text-gray-500" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                    <p className="font-medium">{userData.Email}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                  <Award className="w-5 h-5 text-gray-500" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Level</p>
+                    <p className="font-medium">{userData.Level}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                  <Award className="w-5 h-5 text-gray-500" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Points</p>
+                    <p className="font-medium">{userData.Points.toLocaleString("vi-VN")}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                  <DollarSign className="w-5 h-5 text-gray-500" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Ví</p>
+                    <p className="font-medium">{walletBalanceVND.toLocaleString("vi-VN")} VND</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                  <Calendar className="w-5 h-5 text-gray-500" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Ngày tham gia</p>
+                    <p className="font-medium">
+                      {new Date(userData.CreatedAtUtc).toLocaleDateString("vi-VN")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <p className="text-sm text-blue-600 dark:text-blue-400">Communities</p>
+              </div>
+              <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                {userData.CommunitiesJoined}
+              </p>
+            </div>
+
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <p className="text-sm text-green-600 dark:text-green-400">Events Created</p>
+              </div>
+              <p className="text-2xl font-bold text-green-700 dark:text-green-300">
+                {userData.EventsCreated}
+              </p>
+            </div>
+
+            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <p className="text-sm text-purple-600 dark:text-purple-400">Events Attended</p>
+              </div>
+              <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+                {userData.EventsAttended}
+              </p>
+            </div>
+
+            <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <DollarSign className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                <p className="text-sm text-orange-600 dark:text-orange-400">Tổng Chi Tiêu</p>
+              </div>
+              <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">
+                {totalSpentVND.toLocaleString("vi-VN")} VND
+              </p>
+            </div>
+          </div>
+
+          {/* Membership Info */}
+          {userData.CurrentMembership && (
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90 mb-1">Membership</p>
+                  <p className="text-xl font-bold">{userData.CurrentMembership}</p>
+                </div>
+                {userData.MembershipExpiresAt && (
+                  <div className="text-right">
+                    <p className="text-sm opacity-90 mb-1">Hết hạn</p>
+                    <p className="text-lg font-semibold">
+                      {new Date(userData.MembershipExpiresAt).toLocaleDateString("vi-VN")}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Additional Info */}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Thông Tin Bổ Sung</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-gray-500 dark:text-gray-400">User ID</p>
+                <p className="font-mono text-gray-900 dark:text-white">{userData.UserId}</p>
+              </div>
+              {userData.UpdatedAtUtc && (
+                <div>
+                  <p className="text-gray-500 dark:text-gray-400">Cập nhật lần cuối</p>
+                  <p className="text-gray-900 dark:text-white">
+                    {new Date(userData.UpdatedAtUtc).toLocaleString("vi-VN")}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
