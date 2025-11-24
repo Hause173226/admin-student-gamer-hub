@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import axiosInstance from '../utils/axiosInstance.ts';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
 import { Badge } from '../components/ui/Badge';
+import { TableSkeleton } from '../components/ui/TableSkeleton';
 import { useState } from 'react';
 import { useAuthStore } from '../stores/AuthStore.ts';
 
@@ -37,16 +38,45 @@ export function CommunityManagement() {
     const { user } = useAuthStore();
     const [page, setPage] = useState(1);
 
-    const { data, isLoading, error } = useQuery<CommunitiesResponse>({
+    const { data, isLoading, isFetching, error } = useQuery<CommunitiesResponse>({
         queryKey: ['communities', page],
         queryFn: () => axiosInstance.get(`/admin/dashboard/communities?page=${page}&size=20`).then(res => res.data),
-        keepPreviousData: true, // Smooth pagination
+        placeholderData: keepPreviousData, // Smooth pagination
+        staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh
+        refetchOnWindowFocus: false, // Don't refetch when switching tabs
+        refetchOnMount: false, // Don't refetch on mount if data exists
     });
 
     const communities = data?.Items || [];
     const totalPages = data?.TotalPages || 1;
 
-    if (isLoading) return <div className="p-8 text-center">Loading communities...</div>;
+    if (isLoading && !data) {
+        return (
+            <div className="space-y-6">
+                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-64 animate-pulse"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-48 animate-pulse"></div>
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>School</TableHead>
+                                <TableHead>Members</TableHead>
+                                <TableHead>Clubs</TableHead>
+                                <TableHead>Events</TableHead>
+                                <TableHead>Games</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Created</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableSkeleton rows={10} columns={8} />
+                        </TableBody>
+                    </Table>
+                </div>
+            </div>
+        );
+    }
 
     if (error) return (
         <div className="p-8 text-center text-red-500">
@@ -59,13 +89,15 @@ export function CommunityManagement() {
 
     return (
         <div className="space-y-6">
+            {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Community Management</h1>
-                    <p className="text-gray-600 dark:text-gray-400">Managing {data?.TotalCount || 0} communities. Page {page} of {totalPages}.</p>
+                    <p className="text-gray-600 dark:text-gray-400">Managing {data?.TotalCount || 0} communities.</p>
                 </div>
             </div>
 
+            {/* Table */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
                 <Table>
                     <TableHeader>
@@ -83,7 +115,10 @@ export function CommunityManagement() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {communities.map((community) => {
+                        {isFetching ? (
+                            <TableSkeleton rows={10} columns={10} />
+                        ) : (
+                            communities.map((community) => {
                             const members = community.CachedMembersCount.toLocaleString();
                             const status = community.IsPublic ? 'Public' : 'Private';
                             const statusVariant = community.IsPublic ? 'success' : 'warning';
@@ -109,24 +144,26 @@ export function CommunityManagement() {
                                     </TableCell>
                                 </TableRow>
                             );
-                        })}
+                        })
+                        )}
                     </TableBody>
                 </Table>
             </div>
 
+            {/* Pagination */}
             <div className="flex justify-center space-x-2">
                 <button
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                    disabled={!data?.HasPrevious}
-                    className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Previous
                 </button>
                 <span className="px-4 py-2">Page {page} of {totalPages}</span>
                 <button
-                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                    disabled={!data?.HasNext}
-                    className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={!data?.HasNext || page >= totalPages}
+                    className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Next
                 </button>

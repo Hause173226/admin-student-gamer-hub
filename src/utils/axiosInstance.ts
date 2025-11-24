@@ -9,6 +9,7 @@ const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL, // ✅ use env variable
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
+  timeout: 30000, // 30 seconds timeout - prevent hanging requests
 });
 
 axiosInstance.interceptors.request.use(
@@ -18,6 +19,15 @@ axiosInstance.interceptors.request.use(
     if (token && !noAuthPaths.some((path) => config.url?.includes(path))) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Add request timestamp for performance tracking
+    (config as any).__requestStartTime = Date.now();
+    
+    // Log request for debugging (only in dev)
+    if (import.meta.env.DEV) {
+      console.log(`📤 Request: ${config.method?.toUpperCase()} ${config.url}`);
+    }
+    
     return config;
   },
   (error) => Promise.reject(error)
@@ -38,10 +48,13 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 export const callRefreshToken = async (): Promise<string> => {
-  const res = await axios.post<RefreshTokenResponse>(
+  const res = await axiosInstance.post<RefreshTokenResponse>(
     "/Auth/refresh",
     {},
-    { withCredentials: true }
+    { 
+      withCredentials: true,
+      timeout: 30000, // 30 seconds timeout
+    }
   );
   const newAccessToken = res.data.AccessToken;
   localStorage.setItem("token", newAccessToken);
@@ -77,12 +90,31 @@ export const clearTokenRefresh = () => {
 };
 
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log response time for performance tracking
+    const config = response.config as any;
+    if (config.__requestStartTime) {
+      const duration = Date.now() - config.__requestStartTime;
+      if (import.meta.env.DEV) {
+        console.log(`📥 Response: ${response.config.method?.toUpperCase()} ${response.config.url} - ${duration}ms`);
+      }
+      // Warn if request takes too long (potential .NET cold start)
+      if (duration > 5000 && import.meta.env.DEV) {
+        console.warn(`⚠️ Slow request detected: ${duration}ms - This might be .NET cold start`);
+      }
+    }
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    
+    // Don't retry for login/register endpoints - let them fail normally
+    const noRetryPaths = ["/Auth/login", "/Auth/register"];
+    const isAuthEndpoint = originalRequest.url && noRetryPaths.some(path => originalRequest.url?.includes(path));
+    
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
