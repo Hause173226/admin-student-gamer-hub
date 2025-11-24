@@ -85,6 +85,8 @@ export function Dashboard() {
     queryFn: () =>
       axiosInstance.get("/admin/dashboard/summary").then((res) => res.data),
     staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   // Revenue query with period or custom date range
@@ -105,6 +107,8 @@ export function Dashboard() {
           .get(`/admin/dashboard/revenue`, { params: revenueParams })
           .then((res) => res.data),
       staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
     });
 
   const stats: DashboardSummary = summaryData || {
@@ -197,6 +201,8 @@ export function Dashboard() {
     return null;
   };
 
+  const summaryLoading = !summaryData;
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
@@ -204,94 +210,115 @@ export function Dashboard() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Dashboard Overview
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Welcome, {user?.name}! Stats as of{" "}
-            <Badge variant="info">
-              {stats.GeneratedAtUtc
-                ? new Date(stats.GeneratedAtUtc).toLocaleString()
-                : "—"}
-            </Badge>
-            .
-          </p>
+          {summaryLoading ? (
+            <div className="mt-3 h-5 w-64 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+          ) : (
+            <p className="text-gray-600 dark:text-gray-400">
+              Welcome, {user?.name}! Stats as of{" "}
+              <Badge variant="info">
+                {stats.GeneratedAtUtc
+                  ? new Date(stats.GeneratedAtUtc).toLocaleString()
+                  : "—"}
+              </Badge>
+              .
+            </p>
+          )}
         </div>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <StatCard
-          title="Total Users"
-          value={stats.TotalUsers}
-          icon={Users}
-          color="blue"
-        />
-        <StatCard
-          title="New Users Last 30 Days"
-          value={stats.NewUsersLast30Days}
-          icon={Users}
-          color="green"
-        />
-        <StatCard
-          title="Active Communities"
-          value={stats.ActiveCommunities}
-          icon={Building2}
-          color="purple"
-        />
-        <StatCard
-          title="Total Clubs"
-          value={stats.TotalClubs}
-          icon={Building2}
-          color="blue"
-        />
-        <StatCard
-          title="Total Games"
-          value={stats.TotalGames}
-          icon={Gamepad2}
-          color="green"
-        />
-        <StatCard
-          title="Total Events"
-          value={stats.TotalEvents}
-          icon={Calendar}
-          color="purple"
-        />
-        <StatCard
-          title="Total Revenue (VND)"
-          value={
-            stats.TotalRevenueVND
-              ? (stats.TotalRevenueVND * 100).toLocaleString("vi-VN")
-              : "0"
-          }
-          icon={DollarSign}
-          color="orange"
-        />
-        <StatCard
-          title="Revenue This Month (VND)"
-          value={
-            stats.RevenueThisMonthVND
-              ? (stats.RevenueThisMonthVND * 100).toLocaleString("vi-VN")
-              : "0"
-          }
-          icon={DollarSign}
-          color="green"
-        />
-        <StatCard
-          title="Successful Transactions"
-          value={stats.SuccessfulTransactions}
-          icon={ShoppingCart}
-          color="blue"
-        />
-        <StatCard
-          title="Active Memberships"
-          value={stats.ActiveMemberships}
-          icon={Award}
-          color="green"
-        />
-        <StatCard
-          title="Open Bug Reports"
-          value={stats.OpenBugReports}
-          icon={AlertCircle}
-          color="red"
-        />
+        {summaryLoading ? (
+          Array.from({ length: 12 }).map((_, index) => (
+            <div
+              key={index}
+              className="h-32 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 animate-pulse"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-10 w-10 bg-gray-100 dark:bg-gray-800 rounded-xl"></div>
+              </div>
+              <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+          ))
+        ) : (
+          <>
+            <StatCard
+              title="Total Users"
+              value={stats.TotalUsers}
+              icon={Users}
+              color="blue"
+            />
+            <StatCard
+              title="New Users Last 30 Days"
+              value={stats.NewUsersLast30Days}
+              icon={Users}
+              color="green"
+            />
+            <StatCard
+              title="Active Communities"
+              value={stats.ActiveCommunities}
+              icon={Building2}
+              color="purple"
+            />
+            <StatCard
+              title="Total Clubs"
+              value={stats.TotalClubs}
+              icon={Building2}
+              color="blue"
+            />
+            <StatCard
+              title="Total Games"
+              value={stats.TotalGames}
+              icon={Gamepad2}
+              color="green"
+            />
+            <StatCard
+              title="Total Events"
+              value={stats.TotalEvents}
+              icon={Calendar}
+              color="purple"
+            />
+            <StatCard
+              title="Total Revenue (VND)"
+              value={
+                stats.TotalRevenueVND
+                  ? (stats.TotalRevenueVND * 100).toLocaleString("vi-VN")
+                  : "0"
+              }
+              icon={DollarSign}
+              color="orange"
+            />
+            <StatCard
+              title="Revenue This Month (VND)"
+              value={
+                stats.RevenueThisMonthVND
+                  ? (stats.RevenueThisMonthVND * 100).toLocaleString("vi-VN")
+                  : "0"
+              }
+              icon={DollarSign}
+              color="green"
+            />
+            <StatCard
+              title="Successful Transactions"
+              value={stats.SuccessfulTransactions}
+              icon={ShoppingCart}
+              color="blue"
+            />
+            <StatCard
+              title="Active Memberships"
+              value={stats.ActiveMemberships}
+              icon={Award}
+              color="green"
+            />
+            <StatCard
+              title="Open Bug Reports"
+              value={stats.OpenBugReports}
+              icon={AlertCircle}
+              color="red"
+            />
+          </>
+        )}
       </div>
 
       {/* Revenue Section */}
@@ -419,27 +446,43 @@ export function Dashboard() {
           </div>
 
           {revenueLoading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              <p className="mt-4 text-gray-500 dark:text-gray-400">
-                Đang tải dữ liệu...
-              </p>
+            <div className="space-y-6">
+              {/* Period Info Skeleton */}
+              <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg animate-pulse">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-64"></div>
+              </div>
+
+              {/* Charts Grid Skeleton */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Chart Skeleton */}
+                <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4 animate-pulse"></div>
+                  <div className="h-[350px] bg-gray-100 dark:bg-gray-800 rounded animate-pulse"></div>
+                </div>
+                {/* Pie Chart Skeleton */}
+                <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-40 mb-4 animate-pulse"></div>
+                  <div className="h-[250px] bg-gray-100 dark:bg-gray-800 rounded animate-pulse"></div>
+                </div>
+              </div>
             </div>
           ) : (
             <>
               {/* Period Info */}
-              <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <span className="font-semibold">Kỳ:</span>{" "}
-                  {revenueData?.PeriodStart && revenueData?.PeriodEnd
-                    ? `${new Date(revenueData.PeriodStart).toLocaleDateString(
-                        "vi-VN"
-                      )} - ${new Date(revenueData.PeriodEnd).toLocaleDateString(
-                        "vi-VN"
-                      )}`
-                    : "N/A"}
-                </p>
-              </div>
+              {revenueData?.PeriodStart && revenueData?.PeriodEnd && (
+                <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    <span className="font-semibold">Kỳ:</span>{" "}
+                    {new Date(revenueData.PeriodStart).toLocaleDateString(
+                      "vi-VN"
+                    )}{" "}
+                    -{" "}
+                    {new Date(revenueData.PeriodEnd).toLocaleDateString(
+                      "vi-VN"
+                    )}
+                  </p>
+                </div>
+              )}
 
               {/* Charts Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -448,71 +491,77 @@ export function Dashboard() {
                   <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
                     Xu Hướng Doanh Thu Hàng Ngày
                   </h3>
-                  <ResponsiveContainer width="100%" height={350}>
-                    <ComposedChart data={chartData}>
-                      <defs>
-                        <linearGradient
-                          id="colorRevenue"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="5%"
-                            stopColor="#3b82f6"
-                            stopOpacity={0.8}
-                          />
-                          <stop
-                            offset="95%"
-                            stopColor="#3b82f6"
-                            stopOpacity={0.1}
-                          />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke="#e5e7eb"
-                        className="dark:stroke-gray-700"
-                      />
-                      <XAxis
-                        dataKey="date"
-                        stroke="#6b7280"
-                        className="dark:text-gray-400"
-                        tick={{ fill: "#6b7280" }}
-                      />
-                      <YAxis
-                        yAxisId="left"
-                        stroke="#6b7280"
-                        tick={{ fill: "#6b7280" }}
-                        tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
-                      />
-                      <YAxis
-                        yAxisId="right"
-                        orientation="right"
-                        stroke="#10b981"
-                        tick={{ fill: "#10b981" }}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
-                      <Area
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey="revenue"
-                        fill="url(#colorRevenue)"
-                        stroke="#3b82f6"
-                        strokeWidth={2}
-                        name="Doanh Thu (VND)"
-                      />
-                      <Bar
-                        yAxisId="right"
-                        dataKey="transactions"
-                        fill="#10b981"
-                        name="Số Giao Dịch"
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </ComposedChart>
-                  </ResponsiveContainer>
+                  {chartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={350}>
+                      <ComposedChart data={chartData}>
+                        <defs>
+                          <linearGradient
+                            id="colorRevenue"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="5%"
+                              stopColor="#3b82f6"
+                              stopOpacity={0.8}
+                            />
+                            <stop
+                              offset="95%"
+                              stopColor="#3b82f6"
+                              stopOpacity={0.1}
+                            />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="#e5e7eb"
+                          className="dark:stroke-gray-700"
+                        />
+                        <XAxis
+                          dataKey="date"
+                          stroke="#6b7280"
+                          className="dark:text-gray-400"
+                          tick={{ fill: "#6b7280" }}
+                        />
+                        <YAxis
+                          yAxisId="left"
+                          stroke="#6b7280"
+                          tick={{ fill: "#6b7280" }}
+                          tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                        />
+                        <YAxis
+                          yAxisId="right"
+                          orientation="right"
+                          stroke="#10b981"
+                          tick={{ fill: "#10b981" }}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend />
+                        <Area
+                          yAxisId="left"
+                          type="monotone"
+                          dataKey="revenue"
+                          fill="url(#colorRevenue)"
+                          stroke="#3b82f6"
+                          strokeWidth={2}
+                          name="Doanh Thu (VND)"
+                        />
+                        <Bar
+                          yAxisId="right"
+                          dataKey="transactions"
+                          fill="#10b981"
+                          name="Số Giao Dịch"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-[350px] text-gray-500 dark:text-gray-400">
+                      Không có dữ liệu cho kỳ này
+                    </div>
+                  )}
                 </div>
 
                 {/* Revenue by Type - Pie Chart */}

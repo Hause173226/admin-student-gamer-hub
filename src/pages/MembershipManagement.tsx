@@ -10,6 +10,7 @@ import {
   TableCell,
 } from "../components/ui/Table";
 import { Badge } from "../components/ui/Badge";
+import { TableSkeleton } from "../components/ui/TableSkeleton";
 import { useAuthStore } from "../stores/AuthStore.ts";
 import { Plus, Edit, Trash2, X } from "lucide-react";
 
@@ -177,9 +178,6 @@ export function MembershipManagement() {
     }
   };
 
-  if (isLoading)
-    return <div className="p-8 text-center">Loading memberships...</div>;
-
   if (error)
     return (
       <div className="p-8 text-center text-red-500">
@@ -200,9 +198,13 @@ export function MembershipManagement() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Membership Management
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Managing {plans.length} plans for {user?.name}.
-          </p>
+          {isLoading ? (
+            <div className="mt-2 h-4 w-64 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+          ) : (
+            <p className="text-gray-600 dark:text-gray-400">
+              Managing {plans.length} plans for {user?.name}.
+            </p>
+          )}
         </div>
         <button
           onClick={handleAdd}
@@ -229,51 +231,68 @@ export function MembershipManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {plans.map((plan) => {
-              const priceVND = (plan.PriceCents / 100).toLocaleString("vi-VN"); // 🔥 VND format
-              const revenueVND = (plan.TotalRevenueCents / 100).toLocaleString(
-                "vi-VN"
-              );
-              const eventLimit =
-                plan.MonthlyEventLimit === -1
-                  ? "Unlimited"
-                  : plan.MonthlyEventLimit;
-              return (
-                <TableRow key={plan.PlanId}>
-                  <TableCell className="font-medium">{plan.PlanName}</TableCell>
-                  <TableCell>{priceVND}</TableCell>
-                  <TableCell>{plan.DurationMonths}</TableCell>
-                  <TableCell>{eventLimit}</TableCell>
-                  <TableCell>
-                    <Badge variant={plan.IsActive ? "success" : "error"}>
-                      {plan.IsActive ? "Active" : "Inactive"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{plan.ActiveSubscribers}</TableCell>
-                  <TableCell>{revenueVND}</TableCell>
-                  <TableCell>{plan.PurchasesThisMonth}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleEdit(plan)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                        title="Edit"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(plan)}
-                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                        title="Delete"
-                        disabled={plan.ActiveSubscribers > 0}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {isLoading ? (
+              <TableSkeleton rows={6} columns={9} />
+            ) : plans.length === 0 ? (
+              <TableRow>
+                <td
+                  colSpan={9}
+                  className="px-6 py-10 text-center text-gray-500 dark:text-gray-400"
+                >
+                  Chưa có gói membership nào.
+                </td>
+              </TableRow>
+            ) : (
+              plans.map((plan) => {
+                const priceVND = (plan.PriceCents / 100).toLocaleString(
+                  "vi-VN"
+                ); // 🔥 VND format
+                const revenueVND = (
+                  plan.TotalRevenueCents / 100
+                ).toLocaleString("vi-VN");
+                const eventLimit =
+                  plan.MonthlyEventLimit === -1
+                    ? "Unlimited"
+                    : plan.MonthlyEventLimit;
+                return (
+                  <TableRow key={plan.PlanId}>
+                    <TableCell className="font-medium">
+                      {plan.PlanName}
+                    </TableCell>
+                    <TableCell>{priceVND}</TableCell>
+                    <TableCell>{plan.DurationMonths}</TableCell>
+                    <TableCell>{eventLimit}</TableCell>
+                    <TableCell>
+                      <Badge variant={plan.IsActive ? "success" : "error"}>
+                        {plan.IsActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{plan.ActiveSubscribers}</TableCell>
+                    <TableCell>{revenueVND}</TableCell>
+                    <TableCell>{plan.PurchasesThisMonth}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleEdit(plan)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                          title="Edit"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(plan)}
+                          className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                          title="Delete"
+                          disabled={plan.ActiveSubscribers > 0}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
           </TableBody>
         </Table>
       </div>
