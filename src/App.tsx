@@ -30,13 +30,7 @@ const Game = lazy(() => import("./pages/GameManagement.tsx"));
 function App() {
   return (
     <Router>
-      <Suspense
-        fallback={
-          <div className="p-8 text-center text-gray-500">
-            Loading SGH Admin...
-          </div>
-        }
-      >
+      <Suspense fallback={null}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
