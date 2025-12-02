@@ -1,6 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../utils/axiosInstance.ts";
-import { X, User, Mail, Calendar, DollarSign, Award, Users, Building2 } from "lucide-react";
+import {
+  X,
+  User,
+  Mail,
+  Calendar,
+  DollarSign,
+  Award,
+  Users,
+  Building2,
+} from "lucide-react";
 import Badge from "../components/ui/Badge";
 
 interface UserDetail {
@@ -29,8 +38,15 @@ interface UserDetailModalProps {
   onClose: () => void;
 }
 
-export default function UserDetailModal({ userId, onClose }: UserDetailModalProps) {
-  const { data: userData, isLoading, error } = useQuery<UserDetail>({
+export default function UserDetailModal({
+  userId,
+  onClose,
+}: UserDetailModalProps) {
+  const {
+    data: userData,
+    isLoading,
+    error,
+  } = useQuery<UserDetail>({
     queryKey: ["userDetail", userId],
     queryFn: () =>
       axiosInstance
@@ -44,7 +60,9 @@ export default function UserDetailModal({ userId, onClose }: UserDetailModalProp
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-400">Đang tải thông tin...</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">
+              Đang tải thông tin...
+            </p>
           </div>
         </div>
       </div>
@@ -56,7 +74,9 @@ export default function UserDetailModal({ userId, onClose }: UserDetailModalProp
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Lỗi</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              Lỗi
+            </h2>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -102,14 +122,29 @@ export default function UserDetailModal({ userId, onClose }: UserDetailModalProp
           <div className="flex flex-col md:flex-row gap-6">
             {/* Avatar & Basic Info */}
             <div className="flex-shrink-0">
-              <img
-                src={
-                  userData.AvatarUrl ||
-                  "https://via.placeholder.com/150?text=U"
-                }
-                alt={userData.FullName}
-                className="w-32 h-32 rounded-full object-cover border-4 border-gray-200 dark:border-gray-700"
-              />
+              {userData.AvatarUrl ? (
+                <img
+                  src={userData.AvatarUrl}
+                  alt={userData.FullName}
+                  className="w-32 h-32 rounded-full object-cover border-4 border-gray-200 dark:border-gray-700"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    if (e.currentTarget.nextElementSibling) {
+                      (
+                        e.currentTarget.nextElementSibling as HTMLElement
+                      ).style.display = "flex";
+                    }
+                  }}
+                />
+              ) : null}
+              <div
+                className="w-32 h-32 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-4 border-gray-200 dark:border-gray-700"
+                style={{ display: userData.AvatarUrl ? "none" : "flex" }}
+              >
+                <span className="text-4xl font-medium">
+                  {userData.FullName.charAt(0).toUpperCase()}
+                </span>
+              </div>
             </div>
 
             <div className="flex-1 space-y-4">
@@ -141,7 +176,9 @@ export default function UserDetailModal({ userId, onClose }: UserDetailModalProp
                 <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
                   <User className="w-5 h-5 text-gray-500" />
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Username</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Username
+                    </p>
                     <p className="font-medium">{userData.UserName}</p>
                   </div>
                 </div>
@@ -149,7 +186,9 @@ export default function UserDetailModal({ userId, onClose }: UserDetailModalProp
                 <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
                   <Mail className="w-5 h-5 text-gray-500" />
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Email
+                    </p>
                     <p className="font-medium">{userData.Email}</p>
                   </div>
                 </div>
@@ -157,7 +196,9 @@ export default function UserDetailModal({ userId, onClose }: UserDetailModalProp
                 <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
                   <Award className="w-5 h-5 text-gray-500" />
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Level</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Level
+                    </p>
                     <p className="font-medium">{userData.Level}</p>
                   </div>
                 </div>
@@ -165,25 +206,37 @@ export default function UserDetailModal({ userId, onClose }: UserDetailModalProp
                 <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
                   <Award className="w-5 h-5 text-gray-500" />
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Points</p>
-                    <p className="font-medium">{userData.Points.toLocaleString("vi-VN")}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Points
+                    </p>
+                    <p className="font-medium">
+                      {userData.Points.toLocaleString("vi-VN")}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
                   <DollarSign className="w-5 h-5 text-gray-500" />
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Ví</p>
-                    <p className="font-medium">{walletBalanceVND.toLocaleString("vi-VN")} VND</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Ví
+                    </p>
+                    <p className="font-medium">
+                      {walletBalanceVND.toLocaleString("vi-VN")} VND
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
                   <Calendar className="w-5 h-5 text-gray-500" />
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Ngày tham gia</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Ngày tham gia
+                    </p>
                     <p className="font-medium">
-                      {new Date(userData.CreatedAtUtc).toLocaleDateString("vi-VN")}
+                      {new Date(userData.CreatedAtUtc).toLocaleDateString(
+                        "vi-VN"
+                      )}
                     </p>
                   </div>
                 </div>
@@ -196,7 +249,9 @@ export default function UserDetailModal({ userId, onClose }: UserDetailModalProp
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                <p className="text-sm text-blue-600 dark:text-blue-400">Communities</p>
+                <p className="text-sm text-blue-600 dark:text-blue-400">
+                  Communities
+                </p>
               </div>
               <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
                 {userData.CommunitiesJoined}
@@ -206,7 +261,9 @@ export default function UserDetailModal({ userId, onClose }: UserDetailModalProp
             <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-5 h-5 text-green-600 dark:text-green-400" />
-                <p className="text-sm text-green-600 dark:text-green-400">Events Created</p>
+                <p className="text-sm text-green-600 dark:text-green-400">
+                  Events Created
+                </p>
               </div>
               <p className="text-2xl font-bold text-green-700 dark:text-green-300">
                 {userData.EventsCreated}
@@ -216,7 +273,9 @@ export default function UserDetailModal({ userId, onClose }: UserDetailModalProp
             <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                <p className="text-sm text-purple-600 dark:text-purple-400">Events Attended</p>
+                <p className="text-sm text-purple-600 dark:text-purple-400">
+                  Events Attended
+                </p>
               </div>
               <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">
                 {userData.EventsAttended}
@@ -226,7 +285,9 @@ export default function UserDetailModal({ userId, onClose }: UserDetailModalProp
             <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                <p className="text-sm text-orange-600 dark:text-orange-400">Tổng Chi Tiêu</p>
+                <p className="text-sm text-orange-600 dark:text-orange-400">
+                  Tổng Chi Tiêu
+                </p>
               </div>
               <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">
                 {totalSpentVND.toLocaleString("vi-VN")} VND
@@ -240,13 +301,17 @@ export default function UserDetailModal({ userId, onClose }: UserDetailModalProp
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm opacity-90 mb-1">Membership</p>
-                  <p className="text-xl font-bold">{userData.CurrentMembership}</p>
+                  <p className="text-xl font-bold">
+                    {userData.CurrentMembership}
+                  </p>
                 </div>
                 {userData.MembershipExpiresAt && (
                   <div className="text-right">
                     <p className="text-sm opacity-90 mb-1">Hết hạn</p>
                     <p className="text-lg font-semibold">
-                      {new Date(userData.MembershipExpiresAt).toLocaleDateString("vi-VN")}
+                      {new Date(
+                        userData.MembershipExpiresAt
+                      ).toLocaleDateString("vi-VN")}
                     </p>
                   </div>
                 )}
@@ -256,15 +321,21 @@ export default function UserDetailModal({ userId, onClose }: UserDetailModalProp
 
           {/* Additional Info */}
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Thông Tin Bổ Sung</h4>
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+              Thông Tin Bổ Sung
+            </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-gray-500 dark:text-gray-400">User ID</p>
-                <p className="font-mono text-gray-900 dark:text-white">{userData.UserId}</p>
+                <p className="font-mono text-gray-900 dark:text-white">
+                  {userData.UserId}
+                </p>
               </div>
               {userData.UpdatedAtUtc && (
                 <div>
-                  <p className="text-gray-500 dark:text-gray-400">Cập nhật lần cuối</p>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Cập nhật lần cuối
+                  </p>
                   <p className="text-gray-900 dark:text-white">
                     {new Date(userData.UpdatedAtUtc).toLocaleString("vi-VN")}
                   </p>

@@ -137,14 +137,30 @@ export function Users() {
                 return (
                   <TableRow key={apiUser.UserId}>
                     <TableCell>
-                      <img
-                        src={
-                          apiUser.AvatarUrl ||
-                          "https://via.placeholder.com/40?text=U"
-                        }
-                        alt=""
-                        className="w-10 h-10 rounded-full"
-                      />
+                      {apiUser.AvatarUrl ? (
+                        <img
+                          src={apiUser.AvatarUrl}
+                          alt=""
+                          className="w-10 h-10 rounded-full"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                            if (e.currentTarget.nextElementSibling) {
+                              (
+                                e.currentTarget
+                                  .nextElementSibling as HTMLElement
+                              ).style.display = "flex";
+                            }
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center"
+                        style={{ display: apiUser.AvatarUrl ? "none" : "flex" }}
+                      >
+                        <span className="text-xs font-medium">
+                          {apiUser.FullName.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell className="font-medium">
                       {apiUser.FullName}

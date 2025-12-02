@@ -86,7 +86,7 @@ export function Revenue() {
   // API returns values in VND (not cents), so no division needed
   const chartData: ChartData[] = (revenueData?.DailyBreakdown || []).map(
     (day) => ({
-      date: new Date(day.Date).toLocaleDateString("vi-VN", {
+      date: new Date(day.Date).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
       }),
@@ -167,7 +167,7 @@ export function Revenue() {
             Revenue Management
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Quản lý và phân tích doanh thu hệ thống
+            Manage and analyze system revenue
           </p>
         </div>
       </div>
@@ -178,7 +178,7 @@ export function Revenue() {
           <div className="flex items-center gap-3">
             <Calendar className="w-5 h-5 text-gray-500" />
             <span className="font-medium text-gray-700 dark:text-gray-300">
-              Chọn kỳ:
+              Select Period:
             </span>
           </div>
           <div className="flex flex-col md:flex-row gap-3 items-center w-full md:w-auto">
@@ -195,7 +195,7 @@ export function Revenue() {
                 }}
                 className="rounded"
               />
-              Khoảng ngày tùy chỉnh
+              Custom Date Range
             </label>
             {customDateRange ? (
               <div className="flex gap-2">
@@ -205,7 +205,7 @@ export function Revenue() {
                   onChange={(e) => setStartDate(e.target.value)}
                   className="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="self-center text-gray-500">đến</span>
+                <span className="self-center text-gray-500">to</span>
                 <input
                   type="date"
                   value={endDate}
@@ -221,9 +221,9 @@ export function Revenue() {
                 }
                 className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 text-sm"
               >
-                <option value="week">Tuần này</option>
-                <option value="month">Tháng này</option>
-                <option value="year">Năm nay</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
               </select>
             )}
           </div>
@@ -239,9 +239,9 @@ export function Revenue() {
           revenueData?.PeriodEnd && (
             <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <p className="text-sm text-gray-700 dark:text-gray-300">
-                <span className="font-semibold">Kỳ:</span>{" "}
-                {new Date(revenueData.PeriodStart).toLocaleDateString("vi-VN")}{" "}
-                - {new Date(revenueData.PeriodEnd).toLocaleDateString("vi-VN")}{" "}
+                <span className="font-semibold">Period:</span>{" "}
+                {new Date(revenueData.PeriodStart).toLocaleDateString("en-US")}{" "}
+                - {new Date(revenueData.PeriodEnd).toLocaleDateString("en-US")}{" "}
                 ({revenueData.PeriodType})
               </p>
             </div>
@@ -270,7 +270,7 @@ export function Revenue() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm opacity-90">Tổng Doanh Thu</p>
+              <p className="text-sm opacity-90">Total Revenue</p>
               <DollarSign className="w-6 h-6 opacity-80" />
             </div>
             <p className="text-3xl font-bold">
@@ -357,7 +357,7 @@ export function Revenue() {
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Tổng Giao Dịch
+                  Total Transactions
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {revenueData?.TransactionCount || 0}
@@ -373,7 +373,7 @@ export function Revenue() {
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Thành Công
+                  Successful
                 </p>
                 <p className="text-2xl font-bold text-green-700 dark:text-green-300">
                   {revenueData?.SuccessfulCount || 0}
@@ -383,7 +383,7 @@ export function Revenue() {
             {revenueData?.TransactionCount &&
               revenueData.TransactionCount > 0 && (
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Tỷ lệ:{" "}
+                  Rate:{" "}
                   {(
                     (revenueData.SuccessfulCount /
                       revenueData.TransactionCount) *
@@ -401,7 +401,7 @@ export function Revenue() {
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Thất Bại
+                  Failed
                 </p>
                 <p className="text-2xl font-bold text-red-700 dark:text-red-300">
                   {revenueData?.FailedCount || 0}
@@ -411,7 +411,7 @@ export function Revenue() {
             {revenueData?.TransactionCount &&
               revenueData.TransactionCount > 0 && (
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Tỷ lệ:{" "}
+                  Rate:{" "}
                   {(
                     (revenueData.FailedCount / revenueData.TransactionCount) *
                     100
@@ -442,7 +442,7 @@ export function Revenue() {
           {/* Revenue Trend Chart */}
           <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-              Xu Hướng Doanh Thu Hàng Ngày
+              Daily Revenue Trend
             </h3>
             {chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height={400}>
@@ -494,20 +494,20 @@ export function Revenue() {
                     fill="url(#colorRevenue)"
                     stroke="#3b82f6"
                     strokeWidth={2}
-                    name="Doanh Thu (VND)"
+                    name="Revenue (VND)"
                   />
                   <Bar
                     yAxisId="right"
                     dataKey="transactions"
                     fill="#10b981"
-                    name="Số Giao Dịch"
+                    name="Transactions"
                     radius={[4, 4, 0, 0]}
                   />
                 </ComposedChart>
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-                Không có dữ liệu cho kỳ này
+                No data for this period
               </div>
             )}
           </div>
@@ -515,7 +515,7 @@ export function Revenue() {
           {/* Revenue by Type Pie Chart */}
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-              Phân Loại Doanh Thu
+              Revenue Breakdown
             </h3>
             {revenueByType.length > 0 ? (
               <>
@@ -568,7 +568,7 @@ export function Revenue() {
               </>
             ) : (
               <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-                Không có dữ liệu
+                No data
               </div>
             )}
           </div>
@@ -586,16 +586,16 @@ export function Revenue() {
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Ngày
+                    Date
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Doanh Thu (VND)
+                    Revenue (VND)
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Số Giao Dịch
+                    Transactions
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Trung Bình/Giao Dịch
+                    Avg/Transaction
                   </th>
                 </tr>
               </thead>
@@ -624,7 +624,7 @@ export function Revenue() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Chi Tiết Doanh Thu Theo Ngày
+              Daily Revenue Details
             </h3>
           </div>
           <div className="overflow-x-auto">
@@ -632,16 +632,16 @@ export function Revenue() {
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Ngày
+                    Date
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Doanh Thu (VND)
+                    Revenue (VND)
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Số Giao Dịch
+                    Transactions
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Trung Bình/Giao Dịch
+                    Avg/Transaction
                   </th>
                 </tr>
               </thead>
@@ -660,7 +660,7 @@ export function Revenue() {
                         className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
                       >
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                          {new Date(day.Date).toLocaleDateString("vi-VN", {
+                          {new Date(day.Date).toLocaleDateString("en-US", {
                             weekday: "long",
                             year: "numeric",
                             month: "long",
@@ -685,7 +685,7 @@ export function Revenue() {
                       colSpan={4}
                       className="px-6 py-8 text-center text-gray-500 dark:text-gray-400"
                     >
-                      Không có dữ liệu cho kỳ này
+                      No data for this period
                     </td>
                   </tr>
                 )}
