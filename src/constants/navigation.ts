@@ -74,12 +74,12 @@ export const NAVIGATION_ITEMS: NavigationSection[] = [
         icon: Users,
         badge: null,
       },
-      {
-        name: "Payments",
-        href: "/admin/payments-management",
-        icon: CreditCard,
-        badge: null,
-      },
+      // {
+      //   name: "Payments",
+      //   href: "/admin/payments-management",
+      //   icon: CreditCard,
+      //   badge: null,
+      // },
     ],
   },
   {

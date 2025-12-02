@@ -130,7 +130,7 @@ export function Dashboard() {
   // API returns values in VND (not cents), so no division needed
   const chartData: ChartData[] = (revenueData?.DailyBreakdown || []).map(
     (day) => ({
-      date: new Date(day.Date).toLocaleDateString("vi-VN", {
+      date: new Date(day.Date).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
       }),
@@ -369,9 +369,9 @@ export function Dashboard() {
                   }
                   className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 text-sm"
                 >
-                  <option value="week">Tuần này</option>
-                  <option value="month">Tháng này</option>
-                  <option value="year">Năm nay</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                  <option value="year">This Year</option>
                 </select>
               )}
             </div>
@@ -381,7 +381,7 @@ export function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm opacity-90">Tổng Doanh Thu</p>
+                <p className="text-sm opacity-90">Total Revenue</p>
                 <DollarSign className="w-5 h-5" />
               </div>
               <p className="text-2xl font-bold">
@@ -421,7 +421,7 @@ export function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                Tổng Giao Dịch
+                Total Transactions
               </p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
                 {revenueData?.TransactionCount || 0}
@@ -429,7 +429,7 @@ export function Dashboard() {
             </div>
             <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
               <p className="text-sm text-green-600 dark:text-green-400 mb-1">
-                Thành Công
+                Successful
               </p>
               <p className="text-xl font-bold text-green-700 dark:text-green-300">
                 {revenueData?.SuccessfulCount || 0}
@@ -437,7 +437,7 @@ export function Dashboard() {
             </div>
             <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
               <p className="text-sm text-red-600 dark:text-red-400 mb-1">
-                Thất Bại
+                Failed
               </p>
               <p className="text-xl font-bold text-red-700 dark:text-red-300">
                 {revenueData?.FailedCount || 0}
@@ -472,13 +472,13 @@ export function Dashboard() {
               {revenueData?.PeriodStart && revenueData?.PeriodEnd && (
                 <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    <span className="font-semibold">Kỳ:</span>{" "}
+                    <span className="font-semibold">Period:</span>{" "}
                     {new Date(revenueData.PeriodStart).toLocaleDateString(
-                      "vi-VN"
+                      "en-US"
                     )}{" "}
                     -{" "}
                     {new Date(revenueData.PeriodEnd).toLocaleDateString(
-                      "vi-VN"
+                      "en-US"
                     )}
                   </p>
                 </div>
@@ -489,7 +489,7 @@ export function Dashboard() {
                 {/* Daily Revenue Trend - Composed Chart */}
                 <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
                   <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                    Xu Hướng Doanh Thu Hàng Ngày
+                    Daily Revenue Trend
                   </h3>
                   {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={350}>
@@ -546,20 +546,20 @@ export function Dashboard() {
                           fill="url(#colorRevenue)"
                           stroke="#3b82f6"
                           strokeWidth={2}
-                          name="Doanh Thu (VND)"
+                          name="Revenue (VND)"
                         />
                         <Bar
                           yAxisId="right"
                           dataKey="transactions"
                           fill="#10b981"
-                          name="Số Giao Dịch"
+                          name="Transactions"
                           radius={[4, 4, 0, 0]}
                         />
                       </ComposedChart>
                     </ResponsiveContainer>
                   ) : (
                     <div className="flex items-center justify-center h-[350px] text-gray-500 dark:text-gray-400">
-                      Không có dữ liệu cho kỳ này
+                      No data for this period
                     </div>
                   )}
                 </div>
@@ -567,7 +567,7 @@ export function Dashboard() {
                 {/* Revenue by Type - Pie Chart */}
                 <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
                   <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                    Phân Loại Doanh Thu
+                    Revenue Breakdown
                   </h3>
                   {revenueByType.length > 0 ? (
                     <>
@@ -620,7 +620,7 @@ export function Dashboard() {
                     </>
                   ) : (
                     <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-                      Không có dữ liệu
+                      No data
                     </div>
                   )}
                 </div>
